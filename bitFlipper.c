@@ -64,11 +64,17 @@ int main()
      memset(g_mem, 0xff, mem_size);
 
      //loop forever
+
      while(true){
-      //pick two random addresses in diff rows and then try toclflush toggle them.
+         uint32_t *addrs[8];
+         uint32_t sum = 0;
+         for (int a = 0; a < 8; a++){
+            sum += *addrs[a] + 1;
+         }
+      //pick a pair of two random addresses in diff rows and then try toclflush toggle them.
       for (int i = 0; i < 8; i++){
-         addrs[0] = (uint32_t *) gen_addr();
-         addrs[1] = (uint32_t *) gen_addr();
+         addrs[i] = (uint32_t *) gen_addr();
+         addrs[(i+1)] = (uint32_t *) gen_addr();
          for (int j = 0; j <addrs.size(); j++){
             asm volatile("clflush (%0)" : : "r" (addrs[j]) : "memory");
          }
