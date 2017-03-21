@@ -73,6 +73,16 @@ int main()
             asm volatile("clflush (%0)" : : "r" (addrs[j]) : "memory");
          }
       }
+      uint64_t *end = (uint64_t *) (g_mem + mem_size);
+      uint64_t *ptr;
+      int errors = 0;
+      for (ptr = (uint64_t *) g_mem; ptr < end; ptr++) {
+         uint64_t got = *ptr;
+         if (got != ~(uint64_t) 0) {
+            printf("error at %p: got 0x%" PRIx64 "\n", ptr, got);
+            errors++;
+         }
+      }
      }
 
 	 // inline assembly, have NOT tested this.
