@@ -3,6 +3,19 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+#define __STDC_FORMAT_MACROS
+
+#include <assert.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+
+
 /*
 @Author: Wesley Coomber
 
@@ -33,6 +46,12 @@ const size_t mem_size = 1 << 30;
 
 char *g_mem;
 
+//returns random address in a dif row
+char *gen_addr() {
+  size_t offset = (rand() << 12) % mem_size;
+  return g_mem + offset;
+}
+
 int main()
 {
 	pid_t processID, processParentID;
@@ -41,8 +60,23 @@ int main()
 
 	  g_mem = (char *) mmap(NULL, mem_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
+     //set the memory pointed to by the g_mem value to a value of 255 decimal [0xff hex], and sets 1<<30 [memsize] bytes to the 0xff value
+     memset(g_mem, 0xff, mem_size);
+
+     //loop forever
+     while(true){
+      //pick two random addresses in diff rows and then try toclflush toggle them.
+      for (int i = 0; i < 8; i++){
+         addrs[0] = (uint32_t *) gen_addr();
+         addrs[1] = (uint32_t *) gen_addr();
+         for (int j = 0; j <addrs.size(); j++){
+            asm volatile("clflush (%0)" : : "r" (addrs[j]) : "memory");
+         }
+      }
+     }
+
 	 // inline assembly, have NOT tested this.
-   	asm ("mainForever:
+   	asm volatile("mainForever:
    			mov (X), %eax
    			mov (Y), %ebx
    			clflush (X)
