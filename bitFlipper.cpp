@@ -15,7 +15,8 @@
 #include <time.h>
 #include <stdbool.h>
 #include <unistd.h>
-
+#include <vector>
+#include <chrono>
 
 /*
 @Author: Wesley Coomber
@@ -47,8 +48,9 @@ const size_t mem_size = 1 << 30;
 const size_t dataPattern = 0xff;
 
 char *g_mem;
+char *control_mem;
 
-maxIterations = 8;
+int maxIterations = 1;
 
 //returns random address in a dif row
 char *pick_addr() {
@@ -56,45 +58,28 @@ char *pick_addr() {
   return g_mem + offset;
 }
 
-class Timer{
-  struct timeval start_time_;
-
- public:
-  Timer() {
-    // Note that we use gettimeofday() (with microsecond resolution)
-    // rather than clock_gettime() (with nanosecond resolution) so
-    // that this works on Mac OS X, because OS X doesn't provide
-    // clock_gettime() and we don't really need nanosecond resolution.
-    int rc = gettimeofday(&start_time_, NULL);
-    assert(rc == 0);
-  }
-
-  double get_diff() {
-    struct timeval end_time;
-    int rc = gettimeofday(&end_time, NULL);
-    assert(rc == 0);
-    return (end_time.tv_sec - start_time_.tv_sec
-            + (double) (end_time.tv_usec - start_time_.tv_usec) / 1e6);
-  }
-};
-
 
 //returns random address in a dif row
 char testAll(int ActiveInterval, int refreshInterval) {
-  ai = ActiveInterval;
-  ri = refreshInterval;
-  count = (2*ri)/ai;
+  int ai = ActiveInterval;
+  int ri = refreshInterval;
+  int count = (2*ri)/ai;
+
+  uint32_t *addrs;
 
    //we have a certain window to hammer
    // and we need to maximize the amount of hammering we do within that window
-
 //shoot for 100 to 128 ms
+
+  //for max iterations number of loops pick a random adress within our allocated block, read the row and then flush that row from memory ie rowhammering
    for (int i = 0; i < maxIterations; i++){
+
       addrs = (uint32_t *) pick_addr();
 
       uint32_t sum = 0;
       sum += *addrs + 1;
       asm volatile("clflush (%0)" : : "r" (addrs) : "memory");
+
    }
 
 
@@ -111,20 +96,16 @@ char testAll(int ActiveInterval, int refreshInterval) {
          "clflush (Y)\n"
          "mfence\n"
          "jmp goforever "
-         : "=r"(dst) /* output *//*
-         : "r"(src)      /* input *//*
-         : "%eax");         /* clobbered register *//*
+         : "=r"(dst) 
+         : "%eax");         
          }
    }
    */
 
    //readAll and find errors
    //compare the bitflipped target to a control block of memory (all 1's)
-   differ = memcmp(g_mem, control_mem, sizeof(g_mem))
+   int differ = memcmp(g_mem, control_mem, sizeof(g_mem));
    printf("If not 0 then bitsFlipped!: %s\n", differ);
-
-
-
 
 }
 
@@ -143,11 +124,17 @@ int main()
    memset(g_mem, dataPattern, mem_size);
    memset(control_mem, dataPattern, mem_size);
 
-   Timer timer;
+   //trying to evaluate duration of loop iteration for timing purposes
+    clock_t t;
+    t = clock();
+    testAll(48, 64);
+    t = clock() - t;
+    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+ 
+    printf("testAll() took %f seconds to execute \n", time_taken);
 
-   testAll(48, 64);
-   double time_taken = timer.get_diff();
-   prtinf("time Taken: %s\n", time_taken);
+
+  // printf("time Taken: %g\n", time_taken);
 
 
 	printf("Aloha World\n");
