@@ -54,6 +54,9 @@ int maxIterations = 35000;
 
 int refreshPeriods = -1;
 
+uint32_t *addrs;
+uint32_t *addrs2;
+
 //returns random address in a dif row
 char *pick_addr() {
   size_t offset = (rand() << 12) % mem_size;
@@ -67,11 +70,6 @@ void testAll(int ActiveInterval, int refreshInterval) {
    int ri = refreshInterval;
    int count = (2*ri)/ai;
 
-   uint32_t *addrs;
-   uint32_t *addrs2;
-
-   addrs = (uint32_t *) pick_addr();
-   addrs2 = (uint32_t *) pick_addr();
 
    uint32_t sum = 0;
    int32_t sum2 = 0;
@@ -149,6 +147,11 @@ int main( int argc, char *argv[] )
    //set the memory pointed to by the g_mem value to a value of 255 decimal [0xff hex], and sets 1<<30 [memsize] bytes to the 0xff value
    memset(g_mem, dataPattern, mem_size);
    memset(control_mem, dataPattern, mem_size);
+
+
+
+   addrs = (uint32_t *) pick_addr();
+   addrs2 = (uint32_t *) pick_addr();
 
    //trying to evaluate duration of loop iteration for timing purposes
     clock_t t;
