@@ -154,15 +154,15 @@ int main( int argc, char *argv[] )
    memset(control_mem, dataPattern, mem_size);
 
 
-
-   addrs = (uint32_t *) pick_addr();
-   addrs2 = (uint32_t *) pick_addr();
+   //select two addresses to hammer different each refresh period.
 
    //trying to evaluate duration of loop iteration for timing purposes
     clock_t t;
     t = clock();
     for (int i = 0; i < refreshPeriods; i++){
-          testAll(48, 64);
+      addrs = (uint32_t *) pick_addr();
+      addrs2 = (uint32_t *) pick_addr();
+      testAll(48, 64);
     }
 
     t = clock() - t;
