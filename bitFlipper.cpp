@@ -111,9 +111,14 @@ void testAll(int ActiveInterval, int refreshInterval) {
    //readAll and find errors
    //compare the bitflipped target to a control block of memory (all 1's)
    int differ = -1;
-   differ = memcmp(g_mem, control_mem, sizeof(g_mem));
+   differ = memcmp(g_mem, control_mem, mem_size);
    //printf("%i\n", differ);
    assert(&differ != NULL);
+   if(differ != 0){
+      printf("bitFlip detected! Ending execution: %i\n", differ);
+      exit(1);
+   }
+
    printf("If not 0 then bitsFlipped!: %i\n", differ);
 
 }
