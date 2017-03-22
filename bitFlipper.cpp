@@ -61,24 +61,34 @@ char *pick_addr() {
 
 //returns random address in a dif row
 char testAll(int ActiveInterval, int refreshInterval) {
-  int ai = ActiveInterval;
-  int ri = refreshInterval;
-  int count = (2*ri)/ai;
+   int ai = ActiveInterval;
+   int ri = refreshInterval;
+   int count = (2*ri)/ai;
 
-  uint32_t *addrs;
+   uint32_t *addrs;
+   uint32_t *addrs2;
+
+   addrs = (uint32_t *) pick_addr();
+   addrs2 = (uint32_t *) pick_addr();
 
    //we have a certain window to hammer
    // and we need to maximize the amount of hammering we do within that window
-//shoot for 100 to 128 ms
+   //shoot for 100 to 128 ms
 
-  //for max iterations number of loops pick a random adress within our allocated block, read the row and then flush that row from memory ie rowhammering
+   //for max iterations number of loops pick a pair random adress within our allocated block, read the row and then flush that row from memory ie rowhammering
    for (int i = 0; i < maxIterations; i++){
 
-      addrs = (uint32_t *) pick_addr();
+
 
       uint32_t sum = 0;
       sum += *addrs + 1;
       asm volatile("clflush (%0)" : : "r" (addrs) : "memory");
+
+      
+
+      uint32_t sum2 = 0;
+      sum2 += *addrs2 + 1;
+      asm volatile("clflush (%0)" : : "r" (addrs2) : "memory");
 
    }
 
@@ -104,7 +114,9 @@ char testAll(int ActiveInterval, int refreshInterval) {
 
    //readAll and find errors
    //compare the bitflipped target to a control block of memory (all 1's)
-   int differ = memcmp(g_mem, control_mem, sizeof(g_mem));
+   int differ = -1;
+   differ = memcmp(g_mem, control_mem, sizeof(g_mem));
+   //assert(differ != NULL);
    printf("If not 0 then bitsFlipped!: %s\n", differ);
 
 }
