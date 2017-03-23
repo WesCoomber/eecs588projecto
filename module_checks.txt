@@ -1,0 +1,41 @@
+Samsung #1 (no jul12):
+Iteration 2916 (after 3147.58s)
+  Took 93.6 ms per address set
+  Took 0.936198 sec in total for 10 address sets
+  Took 21.671 nanosec per memory access (for 43200000 memory accesses)
+  This gives 369152 accesses per address per 64 ms refresh period
+error at 0x7f5a9b998d00: got 0xfffffffffff7ffff
+  Checking for bit flips took 0.103437 sec
+** exited with status 256 (0x100)
+
+Samsung #2 (jul12):
+Iteration 5857 (after 6189.63s)
+  Took 94.2 ms per address set
+  Took 0.94235 sec in total for 10 address sets
+  Took 21.814 nanosec per memory access (for 43200000 memory accesses)
+  This gives 366742 accesses per address per 64 ms refresh period
+error at 0x7f0cf22535d0: got 0xffffffefffffffff
+  Checking for bit flips took 0.102877 sec
+** exited with status 256 (0x100)
+
+Crucial #1:
+[overnight scan, nothing found]
+Iteration 34967 (after 37792.03s)
+  Took 99.3 ms per address set
+  Took 0.993357 sec in total for 10 address sets
+  Took 22.994 nanosec per memory access (for 43200000 memory accesses)
+  This gives 347911 accesses per address per 64 ms refresh period
+  Checking for bit flips took 0.105159 sec
+Iteration 34968 (after 37793.13s)
+^C
+
+Crucial #2:
+[afternoon scan,nothing found]
+Iteration 14709 (after 15482.62s)
+  Took 107.6 ms per address set
+  Took 1.07609 sec in total for 10 address sets
+  Took 24.909 nanosec per memory access (for 43200000 memory accesses)
+  This gives 321163 accesses per address per 64 ms refresh period
+  Checking for bit flips took 0.103613 sec
+Iteration 14710 (after 15483.80s)
+

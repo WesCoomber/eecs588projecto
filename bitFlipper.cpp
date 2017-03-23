@@ -65,48 +65,30 @@ char *pick_addr() {
 
 
 //returns random address in a dif row
-void testAll(int ActiveInterval, int refreshInterval) {
+double testAll(int ActiveInterval, int refreshInterval, int loopIters) {
    int ai = ActiveInterval;
    int ri = refreshInterval;
    int count = (2*ri)/ai;
 
-
    uint32_t sum = 0;
    int32_t sum2 = 0;
+    clock_t t;
+    t = clock();
 
    //we have a certain window to hammer
    // and we need to maximize the amount of hammering we do within that window
    //shoot for 100 to 128 ms
 
    //for max iterations number of loops pick a pair random addresses within our allocated block, read the row and then flush that row from memory ie rowhammering
-   for (int i = 0; i < maxIterations; i++){
+   for (int i = 0; i < maxIterations*loopIters; i++){
       sum += *addrs + 1;
-      asm volatile("clflush (%0)" : : "r" (addrs) : "memory");
-
       sum2 += *addrs2 + 1;
+      asm volatile("clflush (%0)" : : "r" (addrs) : "memory");
       asm volatile("clflush (%0)" : : "r" (addrs2) : "memory");
-
    }
-
-
-   //how to find rowMax?
-   /* 
-   rowMax = -1;
-   for (int i = 0; i < rowMax; i++){
-      for (int i = 0; i < count; i++){
-         int dst, src;
-         asm volatile( "goforever:\n" 
-         "mov (X), %%eax \n"
-         "mov (Y), %%ebx \n"
-         "clflush (X)\n"
-         "clflush (Y)\n"
-         "mfence\n"
-         "jmp goforever "
-         : "=r"(dst) 
-         : "%eax");         
-         }
-   }
-   */
+   
+    t = clock() - t;
+    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
 
    //readAll and find errors
    //compare the bitflipped target to a control block of memory (all 1's)
@@ -115,11 +97,17 @@ void testAll(int ActiveInterval, int refreshInterval) {
    //printf("%i\n", differ);
    assert(&differ != NULL);
    if(differ != 0){
+      for (int i=0; i<mem_size/8; i++) {
+        if (((uint64_t*)g_mem)[i] != ((uint64_t*)control_mem)[i]) {
+          printf("Flip at location 0x%lx: %lx\n", &(((uint64_t*)g_mem)[i]), ((uint64_t*)g_mem)[i]);
+        }
+      }
       printf("bitFlip detected! Ending execution: %i\n", differ);
       exit(1);
    }
 
-   printf("If not 0 then bitsFlipped!: %i\n", differ);
+   //printf("If not 0 then bitsFlipped!: %i\n", differ);
+   return time_taken;
 
 }
 
@@ -157,18 +145,13 @@ int main( int argc, char *argv[] )
    //select two addresses to hammer different each refresh period.
 
    //trying to evaluate duration of loop iteration for timing purposes
-    clock_t t;
-    t = clock();
-    for (int i = 0; i < refreshPeriods; i++){
-      addrs = (uint32_t *) pick_addr();
-      addrs2 = (uint32_t *) pick_addr();
-      testAll(48, 64);
-    }
-
-    t = clock() - t;
-    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+   while(1) {
+    addrs = (uint32_t *) pick_addr();
+    addrs2 = (uint32_t *) pick_addr();
+    double time_taken = testAll(48, 64, refreshPeriods);
  
     printf("testAll() took %f seconds to execute \n", time_taken);
+   }
 
 
   // printf("time Taken: %g\n", time_taken);
